@@ -32,19 +32,35 @@ public class App {
             // for each test case, call longDivision method
             longDivision(i);
         }
-
+        System.out.println();
         print();
     }
 
     public static void longDivision(int testCase) {
+        // special case divide by 1 or 0
+        if (divisors[testCase].equals("1")) {
+            quotients[testCase] = dividends[testCase];
+            remainders[testCase] = "0";
+        }else if (divisors[testCase].equals("0")) {
+            quotients[testCase] = "division by 0 not possible";
+            remainders[testCase] = "division by 0 not possible";
+        }else if (divisors[testCase].length()>dividends[testCase].length()) {
+            //no point in doing calculations, just return remainder
+            quotients[testCase] = "0";
+            remainders[testCase] = dividends[testCase];
+        }else{
+
         int counter = 0;
         int offset = 0;
+        // stop case is testing to see when our offset(how many times we have shifted) +
+        // the length of the divisor is equal to our dividend length
         int stopCase = dividends[testCase].length();
         // Convert the input strings to BigInteger for calculations
 
         // we will always want the full version of the divisor, but will be shifting
         // along the dividend
         BigInteger tempDivisor = new BigInteger(divisors[testCase]);
+        BigInteger tempDividend;
 
         while (true) {
 
@@ -52,7 +68,7 @@ public class App {
             if (offset + tempDivisor.toString().length() == stopCase) {
                 // then no more splitting string
                 // perform subtractions until no longer possible
-                BigInteger tempDividend = new BigInteger(dividends[testCase]);
+                tempDividend = new BigInteger(dividends[testCase]);
 
                 while (tempDividend.subtract(tempDivisor).intValue() >= 0) {
                     tempDividend = tempDividend.subtract(tempDivisor);
@@ -71,10 +87,10 @@ public class App {
 
             // this will only take the digits that line up with the divisor...
             String dividend = splitString(dividends[testCase], 0, (tempDivisor.toString().length() + offset));
-            BigInteger tempDividend = new BigInteger(dividend);
+            tempDividend = new BigInteger(dividend);
 
             // perform subtractions until no longer possible
-            while (tempDividend.subtract(tempDivisor).intValue() > 0) {
+            while (tempDividend.subtract(tempDivisor).intValue() >= 0) {
                 tempDividend = tempDividend.subtract(tempDivisor);
                 counter++;
             }
@@ -82,18 +98,37 @@ public class App {
             // concatonation
             quotient += counter;
             counter = 0;
-            // modify dividend so that on next iteration, we string split the remainder +
-            // the following digits we havent touched.
-            dividends[testCase] = tempDividend
-                    + splitString(dividends[testCase], (tempDivisor.toString().length() + offset),
-                            (dividends[testCase].length()));
+
+            if (tempDividend.toString().equals("0")) {
+                // special case
+                dividends[testCase] = splitString(dividends[testCase], (tempDivisor.toString().length() + offset),
+                        (dividends[testCase].length()));
+            } else if (dividends[testCase].equals(tempDividend.toString())) {
+                // if dividend has not changed, just skip
+            } else {
+                // modify dividend so that on next iteration, we string split the remainder +
+                // the following digits we havent touched.
+                dividends[testCase] = tempDividend
+                        + splitString(dividends[testCase], (tempDivisor.toString().length() + offset),
+                                (dividends[testCase].length()));
+            }
+
             // add to the offset, and combine the remainder with the rest of the dividend.
             offset++;
         }
+    }
 
     }
 
     public static String splitString(String number, int start, int end) {
+        if (end > number.length()) {
+            // this means that our divisor is bigger than our remaining dividend.
+            return number;
+        }
+        if (start > number.length()) {
+            // this means that our divisor is bigger than our remaining dividend.
+            return number;
+        }
         String splitString = number.substring(start, end);
         return splitString;
     }
