@@ -145,6 +145,21 @@ public class App {
 
     public static void print() {
         for (int i = 0; i < testCases; i++) {
+
+            //fix leading zeros problem
+            char[] temp = quotients[i].toCharArray();
+            int numberStartIndex=0;
+            if (temp[0] == '0') {
+                //it has leading zeros, take care of them
+                for (int j = 0; j < temp.length; j++) {
+                    if (temp[j] != '0') {
+                        numberStartIndex =j;
+                        quotients[i] = splitString(quotients[i], numberStartIndex, quotients[i].length());
+                        break;
+                    }
+                }
+            }
+
             System.out.println(quotients[i]);
             System.out.println(remainders[i]);
             System.out.println();
