@@ -1,3 +1,4 @@
+
 import java.math.BigInteger;
 import java.util.Scanner;
 
@@ -41,92 +42,101 @@ public class App {
         if (divisors[testCase].equals("1")) {
             quotients[testCase] = dividends[testCase];
             remainders[testCase] = "0";
-        }else if (divisors[testCase].equals("0")) {
+        } else if (divisors[testCase].equals("0")) {
             quotients[testCase] = "division by 0 not possible";
             remainders[testCase] = "division by 0 not possible";
-        }else if (divisors[testCase].length()>dividends[testCase].length()) {
-            //no point in doing calculations, just return remainder
+        } else if (divisors[testCase].length() > dividends[testCase].length()) {
+            // no point in doing calculations, just return remainder
             quotients[testCase] = "0";
             remainders[testCase] = dividends[testCase];
-        }else{
+        } else {
 
-        int counter = 0;
-        int offset = 0;
-        // stop case is testing to see when our offset(how many times we have shifted) +
-        // the length of the divisor is equal to our dividend length
-        int stopCase = dividends[testCase].length();
-        // Convert the input strings to BigInteger for calculations
+            int counter = 0;
+            int offset = 0;
+            // keeping track of how long our string representation should be in case we lose
+            // place values in calculations
+            int dividendLength = dividends[testCase].length();
+            // stop case is testing to see when our offset(how many times we have shifted) +
+            // the length of the divisor is equal to our dividend length using the variable
+            // above.
 
-        // we will always want the full version of the divisor, but will be shifting
-        // along the dividend
-        BigInteger tempDivisor = new BigInteger(divisors[testCase]);
-        BigInteger tempDividend;
+            // Convert the input strings to BigInteger for calculations
 
-        while (true) {
+            // we will always want the full version of the divisor, but will be shifting
+            // along the dividend
+            BigInteger tempDivisor = new BigInteger(divisors[testCase]);
+            // dividend will vary in calculations
+            BigInteger tempDividend;
 
-            // condition to exit
-            if (offset + tempDivisor.toString().length() == stopCase) {
-                // then no more splitting string
+            while (true) {
+
+                // condition to exit
+                if (offset + tempDivisor.toString().length() == dividendLength) {
+                    // if we have shifted our divisor to the end of the dividend...
+                    // then no more splitting string
+                    // perform subtractions until no longer possible
+                    tempDividend = new BigInteger(dividends[testCase]);
+
+                    while (tempDividend.subtract(tempDivisor).intValue() >= 0) {
+                        tempDividend = tempDividend.subtract(tempDivisor);
+                        counter++;
+                    }
+                    // once exited the subtractions, store the counter as first digit in quotient
+                    // concatonation
+                    quotient += counter;
+                    counter = 0;
+                    // store remainder + quotient
+                    quotients[testCase] = quotient;
+                    remainders[testCase] = tempDividend.toString();
+                    quotient = "";
+                    break;
+                }
+
+                // this will only take the digits that line up with the divisor...
+                String dividend = splitString(dividends[testCase], 0, (tempDivisor.toString().length() + offset));
+                tempDividend = new BigInteger(dividend);
+                int tempDividendLength = dividend.length();
+
                 // perform subtractions until no longer possible
-                tempDividend = new BigInteger(dividends[testCase]);
-
                 while (tempDividend.subtract(tempDivisor).intValue() >= 0) {
                     tempDividend = tempDividend.subtract(tempDivisor);
                     counter++;
                 }
                 // once exited the subtractions, store the counter as first digit in quotient
-                // concatonation
+                // by concatonation
                 quotient += counter;
                 counter = 0;
-                // store remainder + quotient
-                quotients[testCase] = quotient;
-                remainders[testCase] = tempDividend.toString();
-                quotient = "";
-                break;
-            }
 
-            // this will only take the digits that line up with the divisor...
-            String dividend = splitString(dividends[testCase], 0, (tempDivisor.toString().length() + offset));
-            tempDividend = new BigInteger(dividend);
-
-            // perform subtractions until no longer possible
-            while (tempDividend.subtract(tempDivisor).intValue() >= 0) {
-                tempDividend = tempDividend.subtract(tempDivisor);
-                counter++;
-            }
-            // once exited the subtractions, store the counter as first digit in quotient
-            // concatonation
-            quotient += counter;
-            counter = 0;
-
-            if (tempDividend.toString().equals("0")) {
-                // special case
-                dividends[testCase] = splitString(dividends[testCase], (tempDivisor.toString().length() + offset),
-                        (dividends[testCase].length()));
-            } else if (dividends[testCase].equals(tempDividend.toString())) {
-                // if dividend has not changed, just skip
-            } else {
-                // modify dividend so that on next iteration, we string split the remainder +
-                // the following digits we havent touched.
-                dividends[testCase] = tempDividend
+                // find out how much has changed and replace the place value with the appropiate
+                // amount of zeros.
+                int difference = tempDividendLength - tempDividend.toString().length();
+                dividends[testCase] = numOfZeros(difference) + tempDividend
                         + splitString(dividends[testCase], (tempDivisor.toString().length() + offset),
-                                (dividends[testCase].length()));
-            }
+                                dividendLength);
 
-            // add to the offset, and combine the remainder with the rest of the dividend.
-            offset++;
+                // add to the offset, and combine the remainder with the rest of the dividend.
+                offset++;
+            }
         }
+
     }
 
+    public static String numOfZeros(int number) {
+        String zeros = "";
+        for (int i = 0; i < number; i++) {
+            // concatonate to return a string of zeros.
+            zeros += "0";
+        }
+        return zeros;
     }
 
     public static String splitString(String number, int start, int end) {
         if (end > number.length()) {
-            // this means that our divisor is bigger than our remaining dividend.
+            //prevents index out of bounds errors
             return number;
         }
         if (start > number.length()) {
-            // this means that our divisor is bigger than our remaining dividend.
+            //prevents index out of bounds errors
             return number;
         }
         String splitString = number.substring(start, end);
